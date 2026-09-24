@@ -31,10 +31,6 @@
  *
  ****************************************************************************/
 
-#if (CONFIG_STM32_HAVE_IP_DMA_V1)
-//Do nothing. IP DMA V1 MCUs are not supported.
-#else
-
 #include <px4_platform_common/px4_config.h>
 #include <px4_platform_common/micro_hal.h>
 #include <stm32_dma.h>
@@ -57,13 +53,26 @@
 #define DSHOT_NUMBER_OF_NIBBLES     3u
 #define MAX_NUM_CHANNELS_PER_TIMER  4u // CCR1-CCR4
 
-// DMA stream configuration registers
-#define DSHOT_DMA_SCR (DMA_SCR_PRIHI | DMA_SCR_MSIZE_32BITS | DMA_SCR_PSIZE_32BITS | DMA_SCR_MINC | \
-		       DMA_SCR_DIR_M2P | DMA_SCR_TCIE | DMA_SCR_TEIE | DMA_SCR_DMEIE)
+// DMA channel configuration.
+//
+// DMA_V1 (DMAMUX, e.g. STM32G4) uses the CCR register: direction is DMA_CCR_DIR
+// (1 = memory-to-peripheral, 0 = peripheral-to-memory) and there is no Direct
+// Mode Error interrupt (DMEIE). DMA_V2 (STM32F2/F4/F7/H7) uses the SCR register.
+#if defined(CONFIG_STM32_HAVE_IP_DMA_V1)
+#  define DSHOT_DMA_SCR (DMA_CCR_PRIHI | DMA_CCR_MSIZE_32BITS | DMA_CCR_PSIZE_32BITS | DMA_CCR_MINC | \
+                       DMA_CCR_DIR | DMA_CCR_TCIE | DMA_CCR_TEIE)
 
 // 16-bit because not all of the General Purpose Timers support 32-bit
-#define DSHOT_BIDIRECTIONAL_DMA_SCR (DMA_SCR_PRIHI | DMA_SCR_MSIZE_16BITS | DMA_SCR_PSIZE_16BITS | DMA_SCR_MINC | \
-				     DMA_SCR_DIR_P2M | DMA_SCR_TCIE | DMA_SCR_TEIE | DMA_SCR_DMEIE)
+#  define DSHOT_BIDIRECTIONAL_DMA_SCR (DMA_CCR_PRIHI | DMA_CCR_MSIZE_16BITS | DMA_CCR_PSIZE_16BITS | \
+                                     DMA_CCR_MINC | DMA_CCR_TCIE | DMA_CCR_TEIE)
+#else
+#  define DSHOT_DMA_SCR (DMA_SCR_PRIHI | DMA_SCR_MSIZE_32BITS | DMA_SCR_PSIZE_32BITS | DMA_SCR_MINC | \
+                       DMA_SCR_DIR_M2P | DMA_SCR_TCIE | DMA_SCR_TEIE | DMA_SCR_DMEIE)
+
+// 16-bit because not all of the General Purpose Timers support 32-bit
+#  define DSHOT_BIDIRECTIONAL_DMA_SCR (DMA_SCR_PRIHI | DMA_SCR_MSIZE_16BITS | DMA_SCR_PSIZE_16BITS | DMA_SCR_MINC | \
+                                     DMA_SCR_DIR_P2M | DMA_SCR_TCIE | DMA_SCR_TEIE | DMA_SCR_DMEIE)
+#endif
 
 #if defined(CONFIG_ARMV7M_DCACHE)
 #  define DMA_BUFFER_MASK    (ARMV7M_DCACHE_LINESIZE - 1)
@@ -1124,4 +1133,3 @@ void up_bdshot_status(void)
 	}
 }
 
-#endif
