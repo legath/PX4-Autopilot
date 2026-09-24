@@ -389,6 +389,22 @@ else()
 		target_link_libraries(px4 PRIVATE -Wl,--print-memory-usage)
 	endif()
 
+	# Workaround for binutils >= 2.44 Thumb/ARM interworking regression with
+	# the IOB symbols referenced from the socket CAN driver: force early
+	# resolution so the linker sees the FUNC/Thumb definition before the
+	# R_ARM_THM_CALL relocations are processed.
+	if("${PX4_BOARD}" STREQUAL "smind_cang474")
+		target_link_libraries(px4 PRIVATE
+			-Wl,-u,iob_copyout
+			-Wl,-u,iob_trycopyin
+			-Wl,-u,iob_peek_queue
+			-Wl,-u,iob_remove_queue
+			-Wl,-u,iob_free_chain
+			-Wl,-u,iob_trimhead_queue
+			-Wl,-u,iob_tryadd_queue
+		)
+	endif()
+
 	target_link_libraries(px4 PRIVATE ${module_libraries})
 
 	if(config_romfs_root)
@@ -628,6 +644,9 @@ if(NOT NUTTX_DIR MATCHES "external")
 	elseif(CONFIG_ARCH_CHIP_STM32H753II)
 		set(DEBUG_DEVICE "STM32H753II")
 		set(DEBUG_SVD_FILE "STM32H7x3.svd")
+	elseif(CONFIG_ARCH_CHIP_STM32G474C)
+		set(DEBUG_DEVICE "STM32G474CE")
+		set(DEBUG_SVD_FILE "STM32G474xx.svd")
 	else()
 		set(DEBUG_DEVICE "")
 		set(DEBUG_SVD_FILE "unknown")

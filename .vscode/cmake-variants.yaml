@@ -546,6 +546,11 @@ CONFIG:
       buildType: MinSizeRel
       settings:
         CONFIG: x-mav_ap-h743v2_default
+    smind_cang474_default:
+      short: smind_cang474_default
+      buildType: MinSizeRel
+      settings:
+        CONFIG: smind_cang474_default
     svehicle_e2_bootloader:
       short: svehicle_e2_bootloader
       buildType: MinSizeRel

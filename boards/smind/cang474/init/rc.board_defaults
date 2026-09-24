@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# board specific defaults
+#------------------------------------------------------------------------------
+
+param set-default MBE_ENABLE 0
+
+pwm_out start
+
+dshot start
