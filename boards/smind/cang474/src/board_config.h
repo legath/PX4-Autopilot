@@ -72,8 +72,10 @@
 
 __BEGIN_DECLS
 
-#define BOARD_HAS_N_S_RGB_LED       1
-#define BOARD_MAX_LEDS              BOARD_HAS_N_S_RGB_LED
+/* Single blue "ACT" LED on PC13 (ArduPilot hwdef: "PC13 LED OUTPUT HIGH",
+ * "define HAL_LED_ON 1"), i.e. a plain active-high GPIO, not an RGB LED.
+ */
+#define BOARD_MAX_LEDS              1
 
 #ifndef __ASSEMBLY__
 
