@@ -95,6 +95,12 @@ __EXPORT void stm32_boardinitialize(void)
 	const uint32_t gpio[] = PX4_GPIO_INIT_LIST;
 	px4_gpio_init(gpio, arraySize(gpio));
 
+	/* Early visual feedback that the firmware is executing: the blue "ACT"
+	 * LED lights up as soon as the clock tree and board init have run, well
+	 * before the DroneCAN node starts.
+	 */
+	rgb_led(0, 0, 255, 0);
+
 	/* Configure SPI all interfaces GPIO. */
 	stm32_spiinitialize();
 }
@@ -136,9 +142,14 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 
 	if (result != OK) {
 		syslog(LOG_ERR, "[boot] FAILED to init params in FLASH %d\n", result);
+		rgb_led(0, 0, 0, 0);   /* LED off: boot error */
+		return -ENODEV;
 	}
 
 #endif // FLASH_BASED_PARAMS
+
+	/* LED stays on: board init succeeded. */
+	rgb_led(0, 255, 0, 0);
 
 	return OK;
 }
